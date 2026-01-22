@@ -1,0 +1,9 @@
+services:
+  blockyserver:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./assets:/app/assets:ro
+      - ./data:/app/data:ro
+    restart: unless-stopped

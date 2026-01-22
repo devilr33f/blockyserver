@@ -1,0 +1,19 @@
+assets/
+data/
+old/
+
+# Go binaries
+blockymerge
+extract-assets
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# AI slop
+.claude
+.sisyphus
+
+# Hytale assets archive
+Assets.zip
