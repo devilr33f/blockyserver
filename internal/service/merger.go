@@ -3,6 +3,8 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/hytale-tools/blockymodel-merger/pkg/blockymodel"
 	"github.com/hytale-tools/blockymodel-merger/pkg/character"
@@ -17,11 +19,27 @@ const (
 	baseTexturePath = "assets/Characters/Player_Textures/Player_Greyscale.png"
 )
 
+// HeadAccessoryEntry extends registry entry with HeadAccessoryType
+type HeadAccessoryEntry struct {
+	ID                           string `json:"Id"`
+	HeadAccessoryType            string `json:"HeadAccessoryType"`
+	DisableCharacterPartCategory string `json:"DisableCharacterPartCategory"`
+}
+
+// HaircutEntry extends registry entry with HairType
+type HaircutEntry struct {
+	ID       string `json:"Id"`
+	HairType string `json:"HairType"`
+}
+
 // MergeService handles character merging operations
 type MergeService struct {
-	registry     *registry.Registry
-	gradientSets *texture.GradientSets
-	baseModel    *blockymodel.BlockyModel
+	registry         *registry.Registry
+	gradientSets     *texture.GradientSets
+	baseModel        *blockymodel.BlockyModel
+	headAccessories  map[string]HeadAccessoryEntry
+	haircuts         map[string]HaircutEntry
+	haircutFallbacks map[string]string // HairType -> fallback haircut ID
 }
 
 // MergeResult contains the results of a merge operation
@@ -51,10 +69,31 @@ func NewMergeService() (*MergeService, error) {
 		return nil, fmt.Errorf("loading base model: %w", err)
 	}
 
+	// Load head accessories for HeadAccessoryType
+	headAccessories, err := loadHeadAccessories("data/HeadAccessory.json")
+	if err != nil {
+		return nil, fmt.Errorf("loading head accessories: %w", err)
+	}
+
+	// Load haircuts for HairType
+	haircuts, err := loadHaircuts("data/Haircuts.json")
+	if err != nil {
+		return nil, fmt.Errorf("loading haircuts: %w", err)
+	}
+
+	// Load haircut fallbacks
+	haircutFallbacks, err := loadHaircutFallbacks("data/HaircutFallbacks.json")
+	if err != nil {
+		return nil, fmt.Errorf("loading haircut fallbacks: %w", err)
+	}
+
 	return &MergeService{
-		registry:     reg,
-		gradientSets: gradientSets,
-		baseModel:    baseModel,
+		registry:         reg,
+		gradientSets:     gradientSets,
+		baseModel:        baseModel,
+		headAccessories:  headAccessories,
+		haircuts:         haircuts,
+		haircutFallbacks: haircutFallbacks,
 	}, nil
 }
 
@@ -65,6 +104,9 @@ func (s *MergeService) MergeFromJSON(charJSON []byte) (*MergeResult, error) {
 	if err := json.Unmarshal(charJSON, &charData); err != nil {
 		return nil, fmt.Errorf("parsing character JSON: %w", err)
 	}
+
+	// Apply haircut fallback if headAccessory requires it
+	s.applyHaircutFallback(&charData)
 
 	// Resolve accessories
 	result, err := charData.ResolveAccessories(s.registry)
@@ -227,4 +269,127 @@ func (s *MergeService) MergeFromJSON(charJSON []byte) (*MergeResult, error) {
 		Atlas:    atlas,
 		GLBBytes: glbBytes,
 	}, nil
+}
+
+// applyHaircutFallback modifies haircut based on headAccessory type
+func (s *MergeService) applyHaircutFallback(charData *character.CharacterData) {
+	if charData.HeadAccessory == nil || *charData.HeadAccessory == "" {
+		return
+	}
+
+	// Parse head accessory ID
+	headAccID := strings.Split(*charData.HeadAccessory, ".")[0]
+	headAcc, ok := s.headAccessories[headAccID]
+	if !ok {
+		return
+	}
+
+	// Check if headAccessory disables haircut entirely
+	if headAcc.DisableCharacterPartCategory == "Haircut" {
+		charData.Haircut = nil
+		return
+	}
+
+	// Check headAccessory type
+	switch headAcc.HeadAccessoryType {
+	case "FullyCovering":
+		// No hair visible
+		charData.Haircut = nil
+	case "HalfCovering":
+		// Use fallback hairstyle
+		if charData.Haircut != nil && *charData.Haircut != "" {
+			s.setFallbackHaircut(charData)
+		}
+	}
+	// "Simple" or empty: keep original haircut
+}
+
+// setFallbackHaircut replaces haircut with appropriate fallback based on HairType
+func (s *MergeService) setFallbackHaircut(charData *character.CharacterData) {
+	if charData.Haircut == nil || *charData.Haircut == "" {
+		return
+	}
+
+	// Parse haircut spec (ID.Color.Variant)
+	parts := strings.Split(*charData.Haircut, ".")
+	haircutID := parts[0]
+	color := ""
+	if len(parts) > 1 {
+		color = parts[1]
+	}
+
+	// Get haircut entry to find HairType
+	haircut, ok := s.haircuts[haircutID]
+	if !ok {
+		return
+	}
+
+	// Get fallback haircut ID for this HairType
+	fallbackID, ok := s.haircutFallbacks[haircut.HairType]
+	if !ok {
+		return
+	}
+
+	// Build new haircut string with fallback ID but same color
+	newHaircut := fallbackID
+	if color != "" {
+		newHaircut = fallbackID + "." + color
+	}
+	charData.Haircut = &newHaircut
+}
+
+// loadHeadAccessories loads head accessory data from JSON file
+func loadHeadAccessories(path string) (map[string]HeadAccessoryEntry, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []HeadAccessoryEntry
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]HeadAccessoryEntry)
+	for _, e := range entries {
+		if e.ID != "" {
+			result[e.ID] = e
+		}
+	}
+	return result, nil
+}
+
+// loadHaircuts loads haircut data from JSON file
+func loadHaircuts(path string) (map[string]HaircutEntry, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []HaircutEntry
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]HaircutEntry)
+	for _, e := range entries {
+		if e.ID != "" {
+			result[e.ID] = e
+		}
+	}
+	return result, nil
+}
+
+// loadHaircutFallbacks loads haircut fallback mappings from JSON file
+func loadHaircutFallbacks(path string) (map[string]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var result map[string]string
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
