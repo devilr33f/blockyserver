@@ -150,6 +150,43 @@ const OpenAPISpec = `{
           }
         }
       }
+    },
+    "/render/mp4": {
+      "post": {
+        "summary": "Render character as MP4 video",
+        "description": "Renders a character as an MP4 video rotating 360 degrees.",
+        "operationId": "renderMP4",
+        "tags": ["Render"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MP4Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MP4 video",
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -202,6 +239,18 @@ const OpenAPISpec = `{
           "height": {"type": "integer", "default": 512, "description": "Image height in pixels"},
           "delay": {"type": "integer", "default": 5, "description": "Centiseconds between frames"},
           "dithering": {"type": "boolean", "default": true, "description": "Enable Floyd-Steinberg dithering (disable for faster rendering)"}
+        }
+      },
+      "MP4Request": {
+        "type": "object",
+        "required": ["character"],
+        "properties": {
+          "character": {"$ref": "#/components/schemas/CharacterConfig"},
+          "background": {"type": "string", "default": "#FFFFFF", "description": "Hex color background"},
+          "frames": {"type": "integer", "default": 36, "description": "Number of frames (36 = 10° per frame)"},
+          "width": {"type": "integer", "default": 512, "description": "Video width in pixels"},
+          "height": {"type": "integer", "default": 512, "description": "Video height in pixels"},
+          "fps": {"type": "integer", "default": 12, "description": "Frames per second"}
         }
       },
       "ErrorResponse": {

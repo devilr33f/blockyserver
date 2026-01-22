@@ -113,6 +113,43 @@ func (h *Handlers) HandleGIF(w http.ResponseWriter, r *http.Request) {
 	w.Write(gifBytes)
 }
 
+// HandleMP4 handles POST /render/mp4
+func (h *Handlers) HandleMP4(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var req MP4Request
+	if err := json.Unmarshal(body, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON: "+err.Error())
+		return
+	}
+	req.ApplyDefaults()
+
+	if req.Character == nil {
+		writeError(w, http.StatusBadRequest, "character field is required")
+		return
+	}
+
+	result, err := h.svc.MergeFromJSON(req.Character)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "merge failed: "+err.Error())
+		return
+	}
+
+	mp4Bytes, err := render.RenderMP4(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.FPS)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "render failed: "+err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "video/mp4")
+	w.Write(mp4Bytes)
+}
+
 // HandleHealth handles GET /health
 func (h *Handlers) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

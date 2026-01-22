@@ -29,6 +29,7 @@ func NewServer(svc *service.MergeService) http.Handler {
 	r.Post("/render/glb", h.HandleGLB)
 	r.Post("/render/png", h.HandlePNG)
 	r.Post("/render/gif", h.HandleGIF)
+	r.Post("/render/mp4", h.HandleMP4)
 
 	return r
 }

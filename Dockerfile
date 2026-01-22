@@ -10,6 +10,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o blockyserver .
 
 FROM alpine:latest
 
+RUN apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 COPY --from=builder /app/blockyserver .

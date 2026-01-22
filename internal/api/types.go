@@ -22,6 +22,16 @@ type GIFRequest struct {
 	Dithering  *bool           `json:"dithering"`  // Floyd-Steinberg dithering, default true
 }
 
+// MP4Request represents a request to render a character as MP4 video
+type MP4Request struct {
+	Character  json.RawMessage `json:"character"`
+	Background string          `json:"background"` // hex color "#RRGGBB", default "#FFFFFF"
+	Frames     int             `json:"frames"`     // default 36 (10° per frame)
+	Width      int             `json:"width"`      // default 512
+	Height     int             `json:"height"`     // default 512
+	FPS        int             `json:"fps"`        // frames per second, default 12
+}
+
 // ErrorResponse represents an error returned by the API
 type ErrorResponse struct {
 	Error string `json:"error"`
@@ -60,5 +70,24 @@ func (r *GIFRequest) ApplyDefaults() {
 	if r.Dithering == nil {
 		defaultDithering := true
 		r.Dithering = &defaultDithering
+	}
+}
+
+// ApplyDefaults fills in default values for MP4Request
+func (r *MP4Request) ApplyDefaults() {
+	if r.Width == 0 {
+		r.Width = 512
+	}
+	if r.Height == 0 {
+		r.Height = 512
+	}
+	if r.Frames == 0 {
+		r.Frames = 36
+	}
+	if r.FPS == 0 {
+		r.FPS = 12
+	}
+	if r.Background == "" {
+		r.Background = "#FFFFFF"
 	}
 }
