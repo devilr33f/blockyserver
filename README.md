@@ -4,7 +4,7 @@
 > Not affiliated with Hypixel Studios.
 > All trademarks and assets are property of their respective owners.
 
-HTTP API for rendering Hytale character models as GLB, PNG, or animated GIF.
+HTTP API for rendering Hytale character models as GLB, PNG, animated GIF, or MP4 video.
 
 Built on top of [blockymodel-merger](https://github.com/hytale-tools/blockymodel-merger) by [JackGamesFTW](https://github.com/JackGamesFTW), special thanks to him!
 
@@ -14,6 +14,7 @@ Built on top of [blockymodel-merger](https://github.com/hytale-tools/blockymodel
 - Export as GLB (glTF binary)
 - Render to PNG with configurable rotation and background
 - Render to animated rotating GIF
+- Render to MP4 video (requires FFmpeg)
 - Swagger UI documentation
 
 ## Requirements
@@ -69,6 +70,24 @@ go build -o blockyserver.exe .
 ./blockyserver.exe -port 3000
 ```
 
+## Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BLOCKY_DISABLE_GLB` | `false` | Disable `/render/glb` endpoint |
+| `BLOCKY_DISABLE_PNG` | `false` | Disable `/render/png` endpoint |
+| `BLOCKY_DISABLE_GIF` | `false` | Disable `/render/gif` endpoint |
+| `BLOCKY_DISABLE_MP4` | `false` | Disable `/render/mp4` endpoint |
+
+Set to `true`, `1`, or `yes` to disable. Disabled endpoints return `403 Forbidden`.
+
+```bash
+# Example: disable GIF and MP4 endpoints
+BLOCKY_DISABLE_GIF=true BLOCKY_DISABLE_MP4=true ./blockyserver.exe
+```
+
 ## Docker
 
 ### Using Docker Compose (recommended)
@@ -99,6 +118,7 @@ docker run -d -p 8080:8080 \
 | `/render/glb` | POST | Returns GLB binary |
 | `/render/png` | POST | Returns PNG image |
 | `/render/gif` | POST | Returns animated GIF |
+| `/render/mp4` | POST | Returns MP4 video |
 | `/docs` | GET | Swagger UI |
 | `/openapi.json` | GET | OpenAPI specification |
 | `/health` | GET | Health check |

@@ -25,9 +25,9 @@ BlockyServer is an HTTP API for rendering Hytale character models. It wraps the 
 ```
 HTTP Request → api.Handlers → service.MergeService → blockymodel-merger pkg
                                     ↓
-                              render.RenderPNG/GIF (for image endpoints)
+                              render.RenderPNG/GIF/MP4 (for image/video endpoints)
                                     ↓
-                              HTTP Response (GLB/PNG/GIF)
+                              HTTP Response (GLB/PNG/GIF/MP4)
 ```
 
 ### Package Structure
@@ -49,6 +49,17 @@ Server requires these directories at runtime (relative to working directory):
 - `assets/` - Character models (.blockymodel), textures
 - `data/` - JSON registry files (accessories, colors, gradients)
 
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BLOCKY_DISABLE_GLB` | `false` | Disable `/render/glb` endpoint (returns 403) |
+| `BLOCKY_DISABLE_PNG` | `false` | Disable `/render/png` endpoint (returns 403) |
+| `BLOCKY_DISABLE_GIF` | `false` | Disable `/render/gif` endpoint (returns 403) |
+| `BLOCKY_DISABLE_MP4` | `false` | Disable `/render/mp4` endpoint (returns 403) |
+
+Set to `true`, `1`, or `yes` to disable an endpoint.
+
 ### API Endpoints
 
 | Endpoint | Method | Description |
@@ -56,6 +67,7 @@ Server requires these directories at runtime (relative to working directory):
 | `/render/glb` | POST | Character JSON → GLB binary |
 | `/render/png` | POST | Character JSON + options → PNG image |
 | `/render/gif` | POST | Character JSON + options → Animated GIF |
+| `/render/mp4` | POST | Character JSON + options → MP4 video (requires FFmpeg) |
 | `/docs` | GET | Swagger UI |
 | `/openapi.json` | GET | OpenAPI spec |
 | `/health` | GET | Health check |
