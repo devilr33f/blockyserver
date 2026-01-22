@@ -14,7 +14,7 @@ import (
 
 const (
 	basePath        = "assets/Characters/Player.blockymodel"
-	baseTexturePath = "Characters/Player_Textures/Player_Greyscale.png"
+	baseTexturePath = "assets/Characters/Player_Textures/Player_Greyscale.png"
 )
 
 // MergeService handles character merging operations
