@@ -200,7 +200,8 @@ const OpenAPISpec = `{
           "frames": {"type": "integer", "default": 36, "description": "Number of frames (36 = 10° per frame)"},
           "width": {"type": "integer", "default": 512, "description": "Image width in pixels"},
           "height": {"type": "integer", "default": 512, "description": "Image height in pixels"},
-          "delay": {"type": "integer", "default": 5, "description": "Centiseconds between frames"}
+          "delay": {"type": "integer", "default": 5, "description": "Centiseconds between frames"},
+          "dithering": {"type": "boolean", "default": true, "description": "Enable Floyd-Steinberg dithering (disable for faster rendering)"}
         }
       },
       "ErrorResponse": {

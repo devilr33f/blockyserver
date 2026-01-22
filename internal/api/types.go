@@ -19,6 +19,7 @@ type GIFRequest struct {
 	Width      int             `json:"width"`      // default 512
 	Height     int             `json:"height"`     // default 512
 	Delay      int             `json:"delay"`      // centiseconds between frames, default 5
+	Dithering  *bool           `json:"dithering"`  // Floyd-Steinberg dithering, default true
 }
 
 // ErrorResponse represents an error returned by the API
@@ -55,5 +56,9 @@ func (r *GIFRequest) ApplyDefaults() {
 	}
 	if r.Background == "" {
 		r.Background = "#FFFFFF"
+	}
+	if r.Dithering == nil {
+		defaultDithering := true
+		r.Dithering = &defaultDithering
 	}
 }

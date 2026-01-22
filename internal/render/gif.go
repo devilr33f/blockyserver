@@ -7,12 +7,13 @@ import (
 	"image/color/palette"
 	"image/draw"
 	"image/gif"
+	"sync"
 
 	"github.com/hytale-tools/blockymodel-merger/pkg/texture"
 )
 
 // RenderGIF renders a GLB model to an animated GIF rotating 360 degrees
-func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, delay int) ([]byte, error) {
+func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, delay int, dithering bool) ([]byte, error) {
 	// Parse background color
 	bgColor, err := ParseHexColor(background)
 	if err != nil {
@@ -38,20 +39,30 @@ func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames,
 		LoopCount: 0, // 0 = infinite loop
 	}
 
-	// Render each frame
+	// Render frames in parallel
+	var wg sync.WaitGroup
 	for i := 0; i < frames; i++ {
-		rotation := float64(i) * rotationPerFrame
+		wg.Add(1)
+		go func(frameIdx int) {
+			defer wg.Done()
+			rotation := float64(frameIdx) * rotationPerFrame
 
-		// Render frame
-		img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor)
+			// Render frame
+			img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor)
 
-		// Quantize to palette
-		paletted := image.NewPaletted(img.Bounds(), palette.Plan9)
-		draw.FloydSteinberg.Draw(paletted, img.Bounds(), img, image.Point{})
+			// Quantize to palette
+			paletted := image.NewPaletted(img.Bounds(), palette.Plan9)
+			if dithering {
+				draw.FloydSteinberg.Draw(paletted, img.Bounds(), img, image.Point{})
+			} else {
+				draw.Draw(paletted, img.Bounds(), img, image.Point{}, draw.Src)
+			}
 
-		g.Image[i] = paletted
-		g.Delay[i] = delay
+			g.Image[frameIdx] = paletted
+			g.Delay[frameIdx] = delay
+		}(i)
 	}
+	wg.Wait()
 
 	// Encode GIF
 	var buf bytes.Buffer

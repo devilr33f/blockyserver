@@ -103,7 +103,7 @@ func (h *Handlers) HandleGIF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gifBytes, err := render.RenderGIF(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.Delay)
+	gifBytes, err := render.RenderGIF(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.Delay, *req.Dithering)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "render failed: "+err.Error())
 		return
