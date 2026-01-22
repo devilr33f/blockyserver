@@ -313,7 +313,7 @@ func quaternionToMatrix(x, y, z, w float64) fauxgl.Matrix {
 }
 
 // RenderScene renders a mesh with the given parameters
-func RenderScene(mesh *fauxgl.Mesh, atlasImage image.Image, rotationY float64, width, height int, bgColor color.Color) image.Image {
+func RenderScene(mesh *fauxgl.Mesh, atlasImage image.Image, rotationY float64, width, height int, bgColor color.Color, autoZoom bool) image.Image {
 	context := fauxgl.NewContext(width, height)
 	context.Cull = fauxgl.CullNone
 	context.AlphaBlend = false
@@ -342,7 +342,11 @@ func RenderScene(mesh *fauxgl.Mesh, atlasImage image.Image, rotationY float64, w
 	far := 100.0
 
 	maxDim := math.Max(modelSize.X, math.Max(modelSize.Y, modelSize.Z))
-	cameraDistance := maxDim / (2 * math.Tan(fauxgl.Radians(fovy/2))) * 1.5
+	multiplier := 1.5
+	if autoZoom {
+		multiplier = 1.25
+	}
+	cameraDistance := maxDim / (2 * math.Tan(fauxgl.Radians(fovy/2))) * multiplier
 
 	eye := fauxgl.V(modelCenter.X, modelCenter.Y, modelCenter.Z+cameraDistance)
 	center := modelCenter

@@ -14,7 +14,7 @@ import (
 )
 
 // RenderGIF renders a GLB model to an animated GIF rotating 360 degrees
-func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, delay int, dithering bool) ([]byte, error) {
+func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, delay int, dithering, autoZoom bool) ([]byte, error) {
 	// Parse background color
 	bgColor, err := ParseHexColor(background)
 	if err != nil {
@@ -41,7 +41,7 @@ func RenderGIF(glbBytes []byte, atlas *texture.Atlas, background string, frames,
 		go func(frameIdx int) {
 			defer wg.Done()
 			rotation := float64(frameIdx) * rotationPerFrame
-			renderedFrames[frameIdx] = RenderScene(mesh, atlasImage, rotation, width, height, bgColor)
+			renderedFrames[frameIdx] = RenderScene(mesh, atlasImage, rotation, width, height, bgColor, autoZoom)
 		}(i)
 	}
 	wg.Wait()

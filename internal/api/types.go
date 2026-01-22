@@ -20,6 +20,7 @@ type GIFRequest struct {
 	Height     int             `json:"height"`     // default 512
 	Delay      int             `json:"delay"`      // centiseconds between frames, default 5
 	Dithering  *bool           `json:"dithering"`  // Floyd-Steinberg dithering, default true
+	AutoZoom   *bool           `json:"autoZoom"`   // auto-zoom to fit character, default true
 }
 
 // MP4Request represents a request to render a character as MP4 video
@@ -30,6 +31,7 @@ type MP4Request struct {
 	Width      int             `json:"width"`      // default 512
 	Height     int             `json:"height"`     // default 512
 	FPS        int             `json:"fps"`        // frames per second, default 12
+	AutoZoom   *bool           `json:"autoZoom"`   // auto-zoom to fit character, default true
 }
 
 // ErrorResponse represents an error returned by the API
@@ -71,6 +73,10 @@ func (r *GIFRequest) ApplyDefaults() {
 		defaultDithering := true
 		r.Dithering = &defaultDithering
 	}
+	if r.AutoZoom == nil {
+		defaultAutoZoom := true
+		r.AutoZoom = &defaultAutoZoom
+	}
 }
 
 // ApplyDefaults fills in default values for MP4Request
@@ -89,5 +95,9 @@ func (r *MP4Request) ApplyDefaults() {
 	}
 	if r.Background == "" {
 		r.Background = "#FFFFFF"
+	}
+	if r.AutoZoom == nil {
+		defaultAutoZoom := true
+		r.AutoZoom = &defaultAutoZoom
 	}
 }

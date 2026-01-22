@@ -66,7 +66,7 @@ func (h *Handlers) HandlePNG(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pngBytes, err := render.RenderPNG(result.GLBBytes, result.Atlas, req.Rotation, req.Background, req.Width, req.Height)
+	pngBytes, err := render.RenderPNG(result.GLBBytes, result.Atlas, req.Rotation, req.Background, req.Width, req.Height, true)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "render failed: "+err.Error())
 		return
@@ -103,7 +103,7 @@ func (h *Handlers) HandleGIF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gifBytes, err := render.RenderGIF(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.Delay, *req.Dithering)
+	gifBytes, err := render.RenderGIF(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.Delay, *req.Dithering, *req.AutoZoom)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "render failed: "+err.Error())
 		return
@@ -140,7 +140,7 @@ func (h *Handlers) HandleMP4(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mp4Bytes, err := render.RenderMP4(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.FPS)
+	mp4Bytes, err := render.RenderMP4(result.GLBBytes, result.Atlas, req.Background, req.Frames, req.Width, req.Height, req.FPS, *req.AutoZoom)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "render failed: "+err.Error())
 		return

@@ -238,7 +238,8 @@ const OpenAPISpec = `{
           "width": {"type": "integer", "default": 512, "description": "Image width in pixels"},
           "height": {"type": "integer", "default": 512, "description": "Image height in pixels"},
           "delay": {"type": "integer", "default": 5, "description": "Centiseconds between frames"},
-          "dithering": {"type": "boolean", "default": true, "description": "Enable Floyd-Steinberg dithering (disable for faster rendering)"}
+          "dithering": {"type": "boolean", "default": true, "description": "Enable Floyd-Steinberg dithering (disable for faster rendering)"},
+          "autoZoom": {"type": "boolean", "default": true, "description": "Auto-zoom camera to fit character tightly in frame"}
         }
       },
       "MP4Request": {
@@ -250,7 +251,8 @@ const OpenAPISpec = `{
           "frames": {"type": "integer", "default": 36, "description": "Number of frames (36 = 10° per frame)"},
           "width": {"type": "integer", "default": 512, "description": "Video width in pixels"},
           "height": {"type": "integer", "default": 512, "description": "Video height in pixels"},
-          "fps": {"type": "integer", "default": 12, "description": "Frames per second"}
+          "fps": {"type": "integer", "default": 12, "description": "Frames per second"},
+          "autoZoom": {"type": "boolean", "default": true, "description": "Auto-zoom camera to fit character tightly in frame"}
         }
       },
       "ErrorResponse": {

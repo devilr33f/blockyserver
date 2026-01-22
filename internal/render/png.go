@@ -9,7 +9,7 @@ import (
 )
 
 // RenderPNG renders a GLB model to PNG with the given parameters
-func RenderPNG(glbBytes []byte, atlas *texture.Atlas, rotation float64, background string, width, height int) ([]byte, error) {
+func RenderPNG(glbBytes []byte, atlas *texture.Atlas, rotation float64, background string, width, height int, autoZoom bool) ([]byte, error) {
 	// Parse background color
 	bgColor, err := ParseHexColor(background)
 	if err != nil {
@@ -26,7 +26,7 @@ func RenderPNG(glbBytes []byte, atlas *texture.Atlas, rotation float64, backgrou
 	}
 
 	// Render the scene
-	img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor)
+	img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor, autoZoom)
 
 	// Encode to PNG
 	var buf bytes.Buffer

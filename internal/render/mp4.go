@@ -12,7 +12,7 @@ import (
 )
 
 // RenderMP4 renders a GLB model to an MP4 video rotating 360 degrees
-func RenderMP4(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, fps int) ([]byte, error) {
+func RenderMP4(glbBytes []byte, atlas *texture.Atlas, background string, frames, width, height, fps int, autoZoom bool) ([]byte, error) {
 	// Parse background color
 	bgColor, err := ParseHexColor(background)
 	if err != nil {
@@ -47,7 +47,7 @@ func RenderMP4(glbBytes []byte, atlas *texture.Atlas, background string, frames,
 		go func(frameIdx int) {
 			defer wg.Done()
 			rotation := float64(frameIdx) * rotationPerFrame
-			img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor)
+			img := RenderScene(mesh, atlasImage, rotation, width, height, bgColor, autoZoom)
 
 			// Write frame to temp file
 			framePath := filepath.Join(tempDir, fmt.Sprintf("frame_%04d.png", frameIdx))
